@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SZ</title>
+  <style>
+    /* body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        } */
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      flex-direction: column;
+      /* This will stack children vertically */
+    }
+
+    .content {
+      width: 80%;
+      max-width: 600px;
+    }
+
+    #canvasContainer {
+      position: relative;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="content">
+  <h1>Compton (/Thompson?) Scattering</h1>
+  <p>CMB photons scatter off of electrons in the intra galaxy-cluster medium. This results in a slight distortion of the
+    CMB's almost perfect thermal spectrum. This effect—the Sunyaev-Zeldovich effect—enables us to map out large galaxy
+    clusters.</p>
+
+  <div class="centered-content">
+    <div id="p5-sketch">
+
+      <!-- Link to the p5.js library -->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+
+      <!-- p5.js Script -->
+      <script>
+        let canvas;
+        let thetaiSlider;
+        let betaSlider;
+        let isCrossSection; // checkbox
+        let time;
+        let fr;
+        let betaMax;
+
+        function setup() {
+          let container = createDiv('');
+          container.id('canvasContainer');
+          container.style('position', 'relative');
+
+          canvas = createCanvas(400, 400);
+          canvas.parent('canvasContainer');
+
+          time = 0;
+          fr = 60; // 60 Hz
+          frameRate(fr);
+
+          // Theta Incident slider
+          thetaiSlider = createSlider(0, PI, PI / 4, 0.01);
+          thetaiSlider.position(10, 10);
+          thetaiSlider.style('width', '150px');
+          thetaiSlider.parent('canvasContainer');
+          // beta slider
+          betaMax = 0.1;
+          betaSlider = createSlider(0, betaMax, 0.1, 0.001);
+          betaSlider.position(10, 30);
+          betaSlider.style('width', '150px');
+          betaSlider.parent('canvasContainer');
+          // Checkbox
+          isCrossSection = createCheckbox('Cross Section', true);
+          isCrossSection.parent('canvasContainer');
+          plotPhi(thetaiSlider.value(), betaSlider.value());
+        }
+
+        function draw() {
+          time = time + 1 / fr;
+          clear();
+          // Sliders
+          textSize(15);
+          text('Beta (0 to ' + betaMax + ')', betaSlider.x + betaSlider.width + 10, betaSlider.y + 15);
+          text('Theta Incident', thetaiSlider.x + thetaiSlider.width + 10, thetaiSlider.y + 15);
+
+          //
+          drawGrid();
+          textSize(18);
+          text('0', width * 5 / 6, height / 2 + 5);
+          text('-π/2', width / 2 - 15, height * 8 / 9);
+          text('π', width * 1 / 9, height / 2 + 5)
+          plotPhi(thetaiSlider.value(), betaSlider.value());
+        }
+
+        function polarToCart(r, theta) {
+          let x = r * cos(theta);
+          let y = r * sin(theta);
+          return [x, y];
+        }
+
+        function phi(theta_o, theta_i) {
+          let muo = cos(theta_o);
+          let mui = cos(theta_i);
+          return 3 / 8 * (1 + mui ** 2 * muo ** 2 + 0.5 * (1 - mui ** 2) * (1 - muo ** 2));
+        }
+
+        function plotPhi(theta_i, beta) {
+          let thetas = [];
+          for (let i = -PI; i <= PI; i += (2 * PI) / 1000) {
+            thetas.push(i);
+          }
+          let scale_up = 100; // for plotting purposes
+          let r = thetas.map(theta_o => scale_up * phi(theta_o, theta_i));
+          let rsintheta = r.map((val, i) => val * abs(sin(thetas[i])));
+
+          let x = [];
+          let y = [];
+          let xst = [];
+          let yst = [];
+
+          for (let i = 0; i < thetas.length; i++) {
+            let [cartX, cartY] = polarToCart(r[i], thetas[i]);
+            x.push(cartX);
+            y.push(cartY);
+            let [cartXst, cartYst] = polarToCart(rsintheta[i], thetas[i]);
+            xst.push(cartXst);
+            yst.push(cartYst);
+          }
+
+          // Draw the plots
+          push(); // Start a new drawing state
+          translate(width / 2, height / 2); // Translate to center of canvas
+          scale(1, -1); // Invert the y-axis
+          for (let i = 0; i < thetas.length - 1; i++) {
+            let muo = cos(thetas[i]);
+            let mui = cos(theta_i);
+            // energy out / energy in
+            let nu_ratio = (1 + beta * muo) / (1 - beta * mui);
+            let numax = (1 + betaMax) / (1 - betaMax);
+            let numin = (1 - betaMax) / (1 + betaMax);
+            let logmax = log(numax);
+            let logmin = log(numin);
+            let inter = map(log(nu_ratio), logmin, logmax, 0, 1);
+            let c = lerpColor(color(255, 50, 0), color(0, 50, 255), inter);
+            let x1;
+            let y1;
+            let x2;
+            let y2;
+            if (isCrossSection.checked()) {
+              x1 = x[i];
+              y1 = y[i];
+              x2 = x[i + 1];
+              y2 = y[i + 1];
+            } else {
+              x1 = xst[i];
+              y1 = yst[i];
+              x2 = xst[i + 1];
+              y2 = yst[i + 1];
+            }
+            stroke(c);
+            strokeWeight(5);
+            line(x1, y1, x2, y2);
+          }
+
+          let speedPhoton = 2;
+          animate_wiggly(time, speedPhoton, scale_up, theta_i);
+          animate_wiggly(time + 1.5 / speedPhoton, speedPhoton, scale_up, theta_i);
+
+          pop(); // Restore original drawing state
+        }
+
+        function drawGrid() {
+          stroke(200); // Light grey color for the grid lines
+          strokeWeight(1); // Thin lines
+
+          // Draw vertical lines
+          for (let x = 0; x <= width; x += 50) { // Adjust the spacing as needed
+            line(x, 0, x, height);
+          }
+
+          // Draw horizontal lines
+          for (let y = 0; y <= height; y += 50) { // Adjust the spacing as needed
+            line(0, y, width, y);
+          }
+        }
+
+        function animate_wiggly(t, speedPhoton, scale_up, theta_i) {
+          let [inX, inY] = polarToCart(scale_up * (-((t * speedPhoton) % 3) + 3), theta_i); // Photon in
+          strokeWeight(3);
+          let photonInter = map((t * speedPhoton) % 3, 0, 3, 0, 1);
+          let cPhoton = lerpColor(color(0, 200, 0, 255), color(0, 200, 0, 0), photonInter);
+          stroke(cPhoton);
+          wiggly(inX, inY, 0.1, -theta_i);
+          wiggly(inX, -inY, 0.1, +theta_i);
+        }
+
+        function wiggly(cx, cy, size, theta) {
+          beginShape();
+          noFill();
+          curveVertex(cx + cos(theta) * size * 0 + sin(theta) * size * 0,
+            cy + -sin(theta) * size * 0 + cos(theta) * size * 0);
+          curveVertex(cx + cos(theta) * size * 50 + sin(theta) * size * (-50),
+            cy + -sin(theta) * size * 50 + cos(theta) * size * (-50));
+          curveVertex(cx + cos(theta) * size * 100 + sin(theta) * size * 50,
+            cy + -sin(theta) * size * 100 + cos(theta) * size * 50);
+          curveVertex(cx + cos(theta) * size * 150 + sin(theta) * size * (-50),
+            cy + -sin(theta) * size * 150 + cos(theta) * size * (-50));
+          curveVertex(cx + cos(theta) * size * 200 + sin(theta) * size * 50,
+            cy + -sin(theta) * size * 200 + cos(theta) * size * 50);
+          curveVertex(cx + cos(theta) * size * 250 + sin(theta) * size * (-50),
+            cy + -sin(theta) * size * 250 + cos(theta) * size * (-50));
+          curveVertex(cx + cos(theta) * size * 300 + sin(theta) * size * 50,
+            cy + -sin(theta) * size * 300 + cos(theta) * size * 50);
+          curveVertex(cx + cos(theta) * size * 350 + sin(theta) * size * 0,
+            cy + -sin(theta) * size * 350 + cos(theta) * size * 0);
+          endShape();
+        }
+      </script>
+
+    </div> <!-- Container for p5.js sketch -->
+  </div>
+
+  </div>
+</body>
+
+</html>
