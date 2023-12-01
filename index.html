@@ -5,16 +5,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SZ</title>
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
   <style>
-    /* body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        } */
     body {
       font-family: Arial, sans-serif;
       margin: 0;
@@ -22,9 +15,10 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 100vh;
       flex-direction: column;
-      /* This will stack children vertically */
+      /* This will stack children vertically 
+      height: 200vh;
+       */
     }
 
     .content {
@@ -32,7 +26,7 @@
       max-width: 600px;
     }
 
-    #canvasContainer {
+    #p5-sketch {
       position: relative;
     }
   </style>
@@ -40,199 +34,89 @@
 
 <body>
   <div class="content">
-  <h1>Compton (/Thompson?) Scattering</h1>
-  <p>CMB photons scatter off of electrons in the intra galaxy-cluster medium. This results in a slight distortion of the
-    CMB's almost perfect thermal spectrum. This effect—the Sunyaev-Zeldovich effect—enables us to map out large galaxy
-    clusters.</p>
+  <h1>The Thermal Sunyaev-Zeldovich Effect</h1>
+  <p>The thermal Sunyaev-Zeldovich effect (hereafter SZ), is the spectral distortion of the Cosmic Microwave Background radiation (CMB) by inverse compton-scattering. That's quite a mouthful, so lets unpack it: </p>
+  <h3>The Cosmic Microwave Background Radiation</h3>
+  <p>The <b>CMB</b> is what we call the oldest photons that we can observe today. These old, relic photons have been travelling through the universe since Recombination, which is to say, since the universe was only 400-thousand years old. Before recombination, the universe was a hot plasma, full of ions, and photons from this age couln't get very far before being scattered off of free electrons; in other words, their "mean-free-path"—the average distance they could travel before they hit something (probably an electron)—was very small. <br/><br/>
+  <b>Recombination</b> is the name we give to that time when the universe finally cooled enough for electrons to bond to protons to form Hydrogen and Helium atoms. These small, neutral atoms are pretty much transparent to photons, which is to say that, at Recombination, the mean-free-path of photons suddenly went from being very short to reeeeeaaaaly long (basically infinite). So the vast majority of photons that came into existance at Recombination have just been flying towards us ever since.<br/><br/>
+  Before Recombiation, photons were in thermal equilibrium with the plamsa of barryons (electrons, neutrons, protons). This is happy for us because this kind of a thermal bath emits light in a very predictable spectrum, called the <b>Plank spectrum</b>. Thermal baths of different temperatures emit light with different plank spectra, as illustrated by the red-green, and blue lines below. Many astronomical objects emit light in a roughly-plank spectrum, which helps us to measure their temperature. <br/><br/>
+  <img src="https://github.com/dcxSt/sz/assets/21654151/54617c78-bb9e-4431-93a9-b30802fbbf73" alt="Pank Spectrum">
+  <i>Above, the Plank Spectrum, drawn at three selected temperatures (in degrees Kelvin). The Plank Spectrum is a quantum mechanical theory and was instrumental in the bith of quantum mechanics; it's was the first domino to fall (1914) in the birth of quantum mechanics that revolutionized physics. One aesthetically pleasing property of the Plank Spectrum is that it retains it's plank-spectrum-ness as it's red-shifted; in other words, if photons are emmited from as a plank spectrum, then get red-shifted by the expanding universe, the red-shifted photons will assume the spectral characteristics of a cooler Plank Spectrum! Therefore, even though the universe was about 3000 degrees Kelvin at Recombination (when CMB photons were emitted), the distribution of CMB photons today traces the plank spectrum of a body that is only 2.7 degrees Kelvin hot.</i><br/><br/>
 
+  Most CMB photons that we can detect travel right through the universe, unperterbed for about a dozen billion years before reaching our detectors. However, <i>some</i> CMB photons which happen to travel through galaxy clusters, <i>do</i> scatter off of electrons. Fortunately for us, these photon-electron interactions are <i>few enough</i> that they don't obscure the almost perfect Plank-spectrum of photons from the CMB, yet they are <i>numerous enough</i> that we can detect the deviations from the plank-spectrum CMB induced by this kind of scattering. This is know as the <b>Sunyaev-Zeldovich</b> effect, after the two Russian physicsists who figured this out, and it has—and will continue, for quite some time—to teach us much about our universe. 
+  </p>
+  <h3>Inverse Compton Scattering</h3>
+  <h4>A Non-Relativistic Approximation</h4>
+  <p>
+  To understand the SZ effect, we need to take a closer look at the physics of electron-photon interactions in the regimes that we are interested in. There are a few variables that come into play, lets introduce them before delving into the technical details. 
+  <ul>
+    <li>The average <b>number density of photons</b> at a perticular point in phase space \(\overline n(\vec r, \vec \nu, t)\). However, the universe is isotropic, so it only depends on the magnitude of the frequency \(\nu\), not the direction. Furthermore, we can make the position implicit to tidy up since it's only relevent in regimes of space where the number density is not homogeneous, \(\overline n(\nu,t)\). 
+    </li>
+    <li>The <b>density of electrons</b>, \(n_e\), in galaxy clusters will determine how much photons scatter off of them. The inter-galacric medium (IGM) within Galaxy clusters is typically populated with about \(10^{-3}\) to \(10^{-4}\) electrons per cubic cm; for comparison, this is 8 to 16 orders of magnitude less than in our atmosphere, and 1 to 8 orders of magnitude less dense than regions in the milky way, but about three orders of magnitude denser than the IGM outside of clusters.
+    </li>
+    <li>The <b>temperature of electrons</b> in a galaxy cluster, \(T_e\), factors into the energy transfer between photons and electrons. Hotter electrons will inject more energy into passing photons. Similarly, we can talk about the <b>temperature of CMB photons</b>, \(T\), which is the temperature of the idealized black-body that would emit a plank spectrum equivalent to the red-shifted CMB photon spectrum, at the time of interaction. 
+    </li>
+  </ul>
+
+  "The time rate of change of the photon occupation number, \(\overline n(\nu,t)\), of an isotropic radiation field (such as the CMB), due to <b>Compton scattering</b> by isotropic, nonrelativistic <b>Maxwellian electron gas</b> is given by the Kompaneets (1957) equation." [Joel Refaeli]
+
+  \[\frac{\partial \overline n}{\partial t} = \frac{k T}{mc}\frac{\sigma_T n_e}{x^2} \frac{\partial}{\partial x}\left[ x^4\left( \frac{T_e}{T}\frac{\partial \overline n}{\partial x} + \overline n + \overline n^2\right) \right]\]
+
+  Where \(x \equiv h\nu/kT\) is the non-dimensional frequency; \(T\) is the radiation temperature; the electron density and temperature are \(n_e\) and \(T_e\). The scattering is assumed to be in the Thompson limit \(h\nu \ll mc^2\), so the cross-section is \(\sigma_T\). Lets unpack this statement some more. <br/><br/>
+
+  A <b>Maxwellian electron gas</b> is a collection of electrons that behave according to the principles of statistical mechanics, characterized by a specific distribution of speeds or energies known as the Maxwell-Boltzmann distribution. This is analagous to the Plank spectrum previously mentioned—in fact, the Plank spectrum and the Maxwell-Boltzmann distribution are intimately related. <br/><br/>
+
+  The <b>cross section</b>, in this case, the Thompson cross-section \(\sigma_T\), is a term that describes what the liklyhood of a photon and electron colliding when they meet: the greater the electron's cross section, the more likely it is to hit a photon traveling by. You might reasonably ask why we call this Compton scattering if we are in a regime where we can use the Thompson cross section—why not just call it Thompson scattering? This is because, in the SZ effect, while we use the Thomson cross section due to the relatively low energy of CMB photons, the phenomenon is classified as Compton scattering because it involves a net transfer of energy between the CMB photons and the high-energy electrons in galaxy clusters. This energy transfer, crucial for the SZ effect, goes beyond the scope of classical Thomson scattering, which assumes elastic interactions without energy exchange. <br/><br/>
+
+  If you were wondering why we care about the scattering of CMB photons off of electrons but not protons, it's because the Thompson cross section of protons and electrons depend inversly on the mass-squared of the particle, so the probability of a photon scattering off a proton is seven orders of magnitude less than the probability of it scattering off an electron. <br/><br/>
+
+  <h4>Relativistic Treatment of Compton Scattering</h4>
+
+  The Kompaneets equation is good enough for certain measurements; but if we want to make really precise measurements, as required, for instance, for precision measurements of the Hubble constant from matter distribution, we must go further. In this section we assemble this equation like a puzzel, from smaller, more intuitive pieces. <br/><br/>
+
+  <img width="388" alt="photon_scattering" src="https://github.com/dcxSt/sz/assets/21654151/43a8aca9-c750-473f-aa45-f12b8ef169d3">
+<br/><br/>
+  The first piece is the relative probability amplitude of an photon coming in from angle \(\theta\) relative to the direction of propagation of the incoming electron (as in the above diagram), to scatter, goes like
+
+  \[p(\mu) = (2\gamma^4 (1-\beta \mu)^3)^{-1}\]
+  
+  where \(\mu = \cos\theta\). This setup, of course, has cylindrical symmetry, which is why we can afford to look at it in 2d. This equation tells us that a photon much prefers to scatter with electrons that are travelling fast and straight towards it, over electrons travelling away from it. You can think of this as a kind of relativistic correction to the thompson cross-section term.<br/><br/>
+
+  The second piece of the puzzel addresses this question: once the photon does scatter off an electron, in which direction will the photon scatter? We denote this \(\phi(\mu';\mu)\) to mean, what is the probability that a photon will scatter at the angle \(\mu'\), given that the angle of incidence is \(\mu\).
+
+  \[\phi(\mu';\mu) = \frac{3}{8}\left(1 + \mu^2\mu'^2 + \frac{1}{2}\left(1 - \mu^2\right)\left(1 - \mu'^2\right)\right)\]
+
+  This formula was derived by Chradrasekhar in 1950, and I'm not exactly sure on what assumptions it rests. One aspect of note is that this probability is symmetric in then incident and scattering angles \(\mu \leftrightarrow \mu'\). The third piece of the puzzel is easier to wrap your head around and arises from energy and momentum conservation: the change in photon direction causes the scattered photon to appear at a new frequency, given by 
+
+  \[\nu_{\text{scatter}} = \nu_{\text{in}}{1 + \beta\mu' \over 1 - \beta\mu}\]
+
+  Here you can play around with an interactive demo of the last two equations. You can chose how fast your weakly relativistic electron is travelling, and at what angle your photon hits the electron. The magnitude of the result curve represents \(\phi(\mu';\mu)\), and the color represents the the red-shift/blue-shift frequency distortion. 
+
+  The derivation of the impact of the Sunyaev-Zeldovich effect on the CMB spectrum, both thermal and kinematic, follows from these three elementary considerations. 
+
+
+
+  <h4>Redshift Indepdence</h4>
+
+  The Sunyaev-Zeldovich effect is redshift independent in the sense that the intrinsic strength of the effect (the amount of energy exchange between CMB photons and electrons) is the same regardless of the cluster's redshift. Therefore, not only is the SZ effect a particularly useful probe of high-redshift galaxy clusters that we cannot easily observer through other means (e.g. X-ray telescopes), but it's also a good probe of galaxy clusters that are closer to us. 
+
+  
+
+  </p>
   <div class="centered-content">
     <div id="p5-sketch">
 
       <!-- Link to the p5.js library -->
       <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+      <script src="./phi_sketch.js"></script>
 
       <!-- p5.js Script -->
-      <script>
-        let canvas;
-        let thetaiSlider;
-        let betaSlider;
-        let isCrossSection; // checkbox
-        let time;
-        let fr;
-        let betaMax;
-
-        function setup() {
-          let container = createDiv('');
-          container.id('canvasContainer');
-          container.style('position', 'relative');
-
-          canvas = createCanvas(400, 400);
-          canvas.parent('canvasContainer');
-
-          time = 0;
-          fr = 60; // 60 Hz
-          frameRate(fr);
-
-          // Theta Incident slider
-          thetaiSlider = createSlider(0, PI, PI / 4, 0.01);
-          thetaiSlider.position(10, 10);
-          thetaiSlider.style('width', '150px');
-          thetaiSlider.parent('canvasContainer');
-          // beta slider
-          betaMax = 0.1;
-          betaSlider = createSlider(0, betaMax, 0.1, 0.001);
-          betaSlider.position(10, 30);
-          betaSlider.style('width', '150px');
-          betaSlider.parent('canvasContainer');
-          // Checkbox
-          isCrossSection = createCheckbox('Cross Section', true);
-          isCrossSection.parent('canvasContainer');
-          plotPhi(thetaiSlider.value(), betaSlider.value());
-        }
-
-        function draw() {
-          time = time + 1 / fr;
-          clear();
-          // Sliders
-          textSize(15);
-          text('Beta (0 to ' + betaMax + ')', betaSlider.x + betaSlider.width + 10, betaSlider.y + 15);
-          text('Theta Incident', thetaiSlider.x + thetaiSlider.width + 10, thetaiSlider.y + 15);
-
-          //
-          drawGrid();
-          textSize(18);
-          text('0', width * 5 / 6, height / 2 + 5);
-          text('-π/2', width / 2 - 15, height * 8 / 9);
-          text('π', width * 1 / 9, height / 2 + 5)
-          plotPhi(thetaiSlider.value(), betaSlider.value());
-        }
-
-        function polarToCart(r, theta) {
-          let x = r * cos(theta);
-          let y = r * sin(theta);
-          return [x, y];
-        }
-
-        function phi(theta_o, theta_i) {
-          let muo = cos(theta_o);
-          let mui = cos(theta_i);
-          return 3 / 8 * (1 + mui ** 2 * muo ** 2 + 0.5 * (1 - mui ** 2) * (1 - muo ** 2));
-        }
-
-        function plotPhi(theta_i, beta) {
-          let thetas = [];
-          for (let i = -PI; i <= PI; i += (2 * PI) / 1000) {
-            thetas.push(i);
-          }
-          let scale_up = 100; // for plotting purposes
-          let r = thetas.map(theta_o => scale_up * phi(theta_o, theta_i));
-          let rsintheta = r.map((val, i) => val * abs(sin(thetas[i])));
-
-          let x = [];
-          let y = [];
-          let xst = [];
-          let yst = [];
-
-          for (let i = 0; i < thetas.length; i++) {
-            let [cartX, cartY] = polarToCart(r[i], thetas[i]);
-            x.push(cartX);
-            y.push(cartY);
-            let [cartXst, cartYst] = polarToCart(rsintheta[i], thetas[i]);
-            xst.push(cartXst);
-            yst.push(cartYst);
-          }
-
-          // Draw the plots
-          push(); // Start a new drawing state
-          translate(width / 2, height / 2); // Translate to center of canvas
-          scale(1, -1); // Invert the y-axis
-          for (let i = 0; i < thetas.length - 1; i++) {
-            let muo = cos(thetas[i]);
-            let mui = cos(theta_i);
-            // energy out / energy in
-            let nu_ratio = (1 + beta * muo) / (1 - beta * mui);
-            let numax = (1 + betaMax) / (1 - betaMax);
-            let numin = (1 - betaMax) / (1 + betaMax);
-            let logmax = log(numax);
-            let logmin = log(numin);
-            let inter = map(log(nu_ratio), logmin, logmax, 0, 1);
-            let c = lerpColor(color(255, 50, 0), color(0, 50, 255), inter);
-            let x1;
-            let y1;
-            let x2;
-            let y2;
-            if (isCrossSection.checked()) {
-              x1 = x[i];
-              y1 = y[i];
-              x2 = x[i + 1];
-              y2 = y[i + 1];
-            } else {
-              x1 = xst[i];
-              y1 = yst[i];
-              x2 = xst[i + 1];
-              y2 = yst[i + 1];
-            }
-            stroke(c);
-            strokeWeight(5);
-            line(x1, y1, x2, y2);
-          }
-
-          let speedPhoton = 2;
-          animate_wiggly(time, speedPhoton, scale_up, theta_i);
-          animate_wiggly(time + 1.5 / speedPhoton, speedPhoton, scale_up, theta_i);
-
-          pop(); // Restore original drawing state
-        }
-
-        function drawGrid() {
-          stroke(200); // Light grey color for the grid lines
-          strokeWeight(1); // Thin lines
-
-          // Draw vertical lines
-          for (let x = 0; x <= width; x += 50) { // Adjust the spacing as needed
-            line(x, 0, x, height);
-          }
-
-          // Draw horizontal lines
-          for (let y = 0; y <= height; y += 50) { // Adjust the spacing as needed
-            line(0, y, width, y);
-          }
-        }
-
-        function animate_wiggly(t, speedPhoton, scale_up, theta_i) {
-          let [inX, inY] = polarToCart(scale_up * (-((t * speedPhoton) % 3) + 3), theta_i); // Photon in
-          strokeWeight(3);
-          let photonInter = map((t * speedPhoton) % 3, 0, 3, 0, 1);
-          let cPhoton = lerpColor(color(0, 200, 0, 255), color(0, 200, 0, 0), photonInter);
-          stroke(cPhoton);
-          wiggly(inX, inY, 0.1, -theta_i);
-          wiggly(inX, -inY, 0.1, +theta_i);
-        }
-
-        function wiggly(cx, cy, size, theta) {
-          beginShape();
-          noFill();
-          curveVertex(cx + cos(theta) * size * 0 + sin(theta) * size * 0,
-            cy + -sin(theta) * size * 0 + cos(theta) * size * 0);
-          curveVertex(cx + cos(theta) * size * 50 + sin(theta) * size * (-50),
-            cy + -sin(theta) * size * 50 + cos(theta) * size * (-50));
-          curveVertex(cx + cos(theta) * size * 100 + sin(theta) * size * 50,
-            cy + -sin(theta) * size * 100 + cos(theta) * size * 50);
-          curveVertex(cx + cos(theta) * size * 150 + sin(theta) * size * (-50),
-            cy + -sin(theta) * size * 150 + cos(theta) * size * (-50));
-          curveVertex(cx + cos(theta) * size * 200 + sin(theta) * size * 50,
-            cy + -sin(theta) * size * 200 + cos(theta) * size * 50);
-          curveVertex(cx + cos(theta) * size * 250 + sin(theta) * size * (-50),
-            cy + -sin(theta) * size * 250 + cos(theta) * size * (-50));
-          curveVertex(cx + cos(theta) * size * 300 + sin(theta) * size * 50,
-            cy + -sin(theta) * size * 300 + cos(theta) * size * 50);
-          curveVertex(cx + cos(theta) * size * 350 + sin(theta) * size * 0,
-            cy + -sin(theta) * size * 350 + cos(theta) * size * 0);
-          endShape();
-        }
-      </script>
-
     </div> <!-- Container for p5.js sketch -->
+
+    <h2>References</h2>
+    Yoel Refaeli, "Comptonization of the Cosmic Microwave Background: The Sunyaev-Zeldovich Effect" (1995) </br></br>
+
+
   </div>
 
   </div>
