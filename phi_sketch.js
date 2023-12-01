@@ -31,7 +31,7 @@ new p5((p) => {
           betaSlider.style('width', '150px');
           betaSlider.parent('p5-sketch');
           // Checkbox
-          isCrossSection = p.createCheckbox('Cross Section', true);
+          isCrossSection = p.createCheckbox('Cross Section [untick to multiply by sine(theta)]', true);
           isCrossSection.parent('p5-sketch');
           p.plotPhi(thetaiSlider.value(), betaSlider.value());
         };

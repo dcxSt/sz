@@ -78,21 +78,63 @@
 <br/><br/>
   The first piece is the relative probability amplitude of an photon coming in from angle \(\theta\) relative to the direction of propagation of the incoming electron (as in the above diagram), to scatter, goes like
 
-  \[p(\mu) = (2\gamma^4 (1-\beta \mu)^3)^{-1}\]
+  \[p(\mu)d\mu = (2\gamma^4 (1-\beta \mu)^3)^{-1}d\mu\]
   
   where \(\mu = \cos\theta\). This setup, of course, has cylindrical symmetry, which is why we can afford to look at it in 2d. This equation tells us that a photon much prefers to scatter with electrons that are travelling fast and straight towards it, over electrons travelling away from it. You can think of this as a kind of relativistic correction to the thompson cross-section term.<br/><br/>
 
   The second piece of the puzzel addresses this question: once the photon does scatter off an electron, in which direction will the photon scatter? We denote this \(\phi(\mu';\mu)\) to mean, what is the probability that a photon will scatter at the angle \(\mu'\), given that the angle of incidence is \(\mu\).
 
-  \[\phi(\mu';\mu) = \frac{3}{8}\left(1 + \mu^2\mu'^2 + \frac{1}{2}\left(1 - \mu^2\right)\left(1 - \mu'^2\right)\right)\]
+  \[\phi(\mu';\mu)d\mu' = \frac{3}{8}\left(1 + \mu^2\mu'^2 + \frac{1}{2}\left(1 - \mu^2\right)\left(1 - \mu'^2\right)\right)d\mu'\]
 
-  This formula was derived by Chradrasekhar in 1950, and I'm not exactly sure on what assumptions it rests. One aspect of note is that this probability is symmetric in then incident and scattering angles \(\mu \leftrightarrow \mu'\). The third piece of the puzzel is easier to wrap your head around and arises from energy and momentum conservation: the change in photon direction causes the scattered photon to appear at a new frequency, given by 
+  This formula was derived by Chradrasekhar in 1950. I don't exactly know on what assumptions it rests. One aspect of note is that this probability is symmetric in then incident and scattering angles \(\mu \leftrightarrow \mu'\). <br/><br/>
+
+  The third piece of the puzzel is easier to wrap your head around and arises from energy and momentum conservation: the change in photon direction causes the scattered photon to appear at a new frequency, given by 
 
   \[\nu_{\text{scatter}} = \nu_{\text{in}}{1 + \beta\mu' \over 1 - \beta\mu}\]
 
-  Here you can play around with an interactive demo of the last two equations. You can chose how fast your weakly relativistic electron is travelling, and at what angle your photon hits the electron. The magnitude of the result curve represents \(\phi(\mu';\mu)\), and the color represents the the red-shift/blue-shift frequency distortion. 
+  <i>Here you can play around with an interactive plot of the last two equations combined. You can chose how fast your weakly relativistic electron is travelling, and at what angle your photon hits the electron. The magnitude of the resulting curve represents \(\phi(\mu';\mu)\), and the color represents the the red-shift/blue-shift frequency distortion.</i><br/><br/>
 
-  The derivation of the impact of the Sunyaev-Zeldovich effect on the CMB spectrum, both thermal and kinematic, follows from these three elementary considerations. 
+  <div class="centered-content">
+    <div id="p5-sketch">
+      <!-- Link to the p5.js library -->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+      <!-- p5.js Script -->
+      <script src="./phi_sketch.js"></script>
+    </div> <!-- Container for p5.js sketch -->
+  </div>
+  <br/>
+
+  The derivation of the impact of the Sunyaev-Zeldovich effect on the CMB spectrum, both thermal and kinematic, follows from these three equations. As is the convention in the litterature, we express the scattering in terms of a logarithmic frequency shift, \(s\)
+
+  \[s = \log (\nu_{\text{scatter}} / \nu_{\text{in}})\]
+
+  The probability that a single scattering of a photon causes a frequency shift \(s\) from an electron with speed \(\beta c\) is
+
+  \[P(s;\beta)ds = \int_{\mu} d\mu p(\mu) \phi(\mu';\mu) \frac{d\mu'}{ds}ds\]
+
+  Note that \(\mu'\) can be expressed in terms of \(\mu\), \(\beta\) and \(s\).
+
+  <h4>Scattering of Photons by an Electron Population</h4>
+
+  Some CMB photons will traverse right through a glaxy cluster without scattering off of any electrons, some will scatter once, some twice, and so forth. The SZ effect takes place in a weakly scattering regime, so out of the few CMB photons that do scatter, most only scatter once. Although the math of multi-scattering events is actually kind of neat—if you're the sort of person that enjoys convolutions and Fourier transforms—we're going to just pretend that CMB photons can only scatter zero or one times while traversing galaxy clusters. <br/><br/>
+
+  For a photon that has scattered only once, the probability distribution of \(s\) is
+
+  \[P_1(s) = \int_{\beta_{\text{lim}}}^1 p_e(\beta)d\beta P(s;\beta)\]
+
+  Where \(\beta_{\text{lim}} = (e^{|s|} - 1)/(e^{|s|} + 1)\) is the minimum value of \(\beta\) capable of causing the frequency shift \(s\); and \(p_e(\beta)\) is the distribution of electron speeds.<br/><br/>
+
+  *!!!Interactive(?) P5 Plot of beta lim*
+
+  <h4>Effect on the CMB Spectrum</h4>
+
+  The incident CMB spectrum is a remarkably precise black-body spectrum—the incident beam of photons, therefore, samples the plank spectrum
+
+  \[I_0(\nu) = \frac{2h\nu^3 }{c^2} \frac{1}{e^{h\nu\over kT} - 1}\]
+
+  If every incident photon gets scattered once, the resulting spectrum is given by
+
+  \[{I(\nu) \over \nu} = \int_0^\infty P_1(\nu,\nu_0) {I_0(\nu_0) \over \nu_0}\]
 
 
 
@@ -103,21 +145,11 @@
   
 
   </p>
-  <div class="centered-content">
-    <div id="p5-sketch">
-
-      <!-- Link to the p5.js library -->
-      <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
-      <script src="./phi_sketch.js"></script>
-
-      <!-- p5.js Script -->
-    </div> <!-- Container for p5.js sketch -->
 
     <h2>References</h2>
     Yoel Refaeli, "Comptonization of the Cosmic Microwave Background: The Sunyaev-Zeldovich Effect" (1995) </br></br>
 
 
-  </div>
 
   </div>
 </body>
